@@ -1,0 +1,59 @@
+package org.example.model;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.dbcp2.BasicDataSource;
+import org.example.dto.UserDto;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+public class ComplanitModel {
+
+    public void getUserComplaints(UserDto user, HttpServletRequest req, HttpServletResponse resp) {
+        ServletContext context = req.getServletContext();
+        BasicDataSource ds = (BasicDataSource) context.getAttribute("ds");
+        resp.setContentType("application/json");
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement("SELECT c.CID, c.description, c.complain_date, c.status, c.resolved_date, c.resolved_time, u.name FROM complaint c JOIN user u ON c.user_id = u.UId");
+            ResultSet resultSet = pstm.executeQuery();
+
+            List<Map<String, String>> complaints = new ArrayList<>();
+            while (resultSet.next()) {
+                Map<String, String> complaint = Map.of(
+                        "cid", resultSet.getString("CID"),
+                        "name", resultSet.getString("name"),
+                        "description", resultSet.getString("description"),
+                        "user_id", resultSet.getString("user_id"),
+                        "complain_date", resultSet.getString("complain_date"),
+                        "status", resultSet.getString("status"),
+                        "resolved_date", resultSet.getString("resolved_date"),
+                        "resolved_time", resultSet.getString("resolved_time")
+                );
+                complaints.add(complaint);
+            }
+
+            if (complaints.isEmpty()) {
+
+            } else {
+
+            }
+        } catch (SQLException e) {
+
+            throw new RuntimeException(e);
+        }
+    }
+}

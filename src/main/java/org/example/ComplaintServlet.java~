@@ -1,0 +1,221 @@
+package org.example;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.dbcp2.BasicDataSource;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+@WebServlet("/complaint")
+public class ComplaintServlet extends HttpServlet {
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Map<String, String> user = objectMapper.readValue(req.getInputStream(), Map.class);
+        ServletContext sc = req.getServletContext();
+        BasicDataSource ds = (BasicDataSource) sc.getAttribute("ds");
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement("INSERT INTO Complaint (CID, description, user_id, complain_date, status, resolved_date, resolved_time) VALUES (?,?,?,?,?,?,?)");
+            pstm.setString(1, UUID.randomUUID().toString());
+            pstm.setString(2, user.get("description"));
+            pstm.setString(3, user.get("user_id"));
+            pstm.setString(4, user.get("complain_date"));
+            pstm.setString(5, user.get("status"));
+            pstm.setString(6, user.get("resolved_date"));
+            pstm.setString(7, user.get("resolved_time"));
+
+            int i = pstm.executeUpdate();
+            resp.setContentType("application/json");
+            if (i > 0) {
+                resp.setStatus(HttpServletResponse.SC_CREATED);
+                objectMapper.writeValue(resp.getWriter(), Map.of(
+                        "code", "201",
+                        "status", "success",
+                        "message", "Complaint created successfully"
+                ));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                objectMapper.writeValue(resp.getWriter(), Map.of(
+                        "code", "400",
+                        "status", "error",
+                        "message", "Internal Server Error"
+                ));
+            }
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            objectMapper.writeValue(resp.getWriter(), Map.of(
+                    "code", "400",
+                    "status", "error",
+                    "message", "Internal Server Error"
+            ));
+            throw new RuntimeException(e);
+        }
+    }
+    @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        ServletContext context = req.getServletContext();
+        BasicDataSource ds = (BasicDataSource) context.getAttribute("ds");
+        resp.setContentType("application/json");
+        ObjectMapper mapper = new ObjectMapper();
+        PrintWriter out = resp.getWriter();
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Complaint");
+            ResultSet resultSet = pstm.executeQuery();
+
+            List<Map<String, String>> complaints = new ArrayList<>();
+            while (resultSet.next()) {
+                Map<String, String> complaint = Map.of(
+                        "cid", resultSet.getString("CID"),
+                        "description", resultSet.getString("description"),
+                        "user_id", resultSet.getString("user_id"),
+                        "complain_date", resultSet.getString("complain_date"),
+                        "status", resultSet.getString("status"),
+                        "resolved_date", resultSet.getString("resolved_date"),
+                        "resolved_time", resultSet.getString("resolved_time")
+                );
+                complaints.add(complaint);
+            }
+
+            if (complaints.isEmpty()) {
+                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                mapper.writeValue(out, Map.of(
+                        "code", "204",
+                        "status", "No Content",
+                        "message", "No complaints found"
+                ));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_OK);
+                mapper.writeValue(out, Map.of(
+                        "code", "200",
+                        "status", "success",
+                        "data", complaints
+                ));
+            }
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            mapper.writeValue(out, Map.of(
+                    "code", "500",
+                    "status", "error",
+                    "message", "Internal Server Error"
+            ));
+            throw new RuntimeException(e);
+        }
+    }
+    @Override
+    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String,String> user = mapper.readValue(req.getInputStream(), Map.class);
+
+            String cid = req.getParameter("cid");
+            String description = req.getParameter("description");
+            String status = req.getParameter("status");
+            String resolvedDate = req.getParameter("resolved_date");
+            String resolvedTime = req.getParameter("resolved_time");
+
+            ServletContext servletContext = req.getServletContext();
+            BasicDataSource ds = (BasicDataSource) servletContext.getAttribute("ds");
+
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement(
+                    "UPDATE complaint SET description = ?, status = ?, resolved_date = ?, resolved_time = ? WHERE CID = ?"
+            );
+
+            pstm.setString(1, description);
+            pstm.setString(2, status);
+            pstm.setString(3, resolvedDate); // format: YYYY-MM-DD
+            pstm.setString(4, resolvedTime); // format: HH:MM:SS
+            pstm.setString(5, cid);
+
+            int i = pstm.executeUpdate();
+            resp.setContentType("application/json");
+            System.out.println(i);
+
+            if (i > 0) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+                mapper.writeValue(resp.getWriter(), Map.of(
+                        "code", "200",
+                        "status", "success",
+                        "message", "Complaint updated successfully"
+                ));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                mapper.writeValue(resp.getWriter(), Map.of(
+                        "code", "400",
+                        "status", "error",
+                        "message", "Complaint update failed"
+                ));
+            }
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(resp.getWriter(), Map.of(
+                    "code", "500",
+                    "status", "error",
+                    "message", "Internal server error"
+            ));
+            throw new RuntimeException(e);
+        }
+    }
+    @Override
+    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String cid = req.getParameter("cid"); // e.g., /api/v1/complaint?cid=CMP001
+        ServletContext servletContext = req.getServletContext();
+        BasicDataSource ds = (BasicDataSource) servletContext.getAttribute("ds");
+        ObjectMapper mapper = new ObjectMapper();
+        resp.setContentType("application/json");
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement(
+                    "DELETE FROM Complaint WHERE CID = ?"
+            );
+            pstm.setString(1, cid);
+
+            int i = pstm.executeUpdate();
+
+            if (i > 0) {
+                resp.setStatus(HttpServletResponse.SC_OK);
+                mapper.writeValue(resp.getWriter(), Map.of(
+                        "code", "200",
+                        "status", "success",
+                        "message", "Complaint deleted successfully"
+                ));
+            } else {
+                resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                mapper.writeValue(resp.getWriter(), Map.of(
+                        "code", "404",
+                        "status", "error",
+                        "message", "Complaint not found"
+                ));
+            }
+
+        } catch (SQLException e) {
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            mapper.writeValue(resp.getWriter(), Map.of(
+                    "code", "500",
+                    "status", "error",
+                    "message", "Internal Server Error"
+            ));
+            throw new RuntimeException(e);
+        }
+    }
+
+}

@@ -1,0 +1,22 @@
+.employee-section{
+    display: flex;
+}
+.left-side{
+    width: 30vw;
+    height: 100vh;
+}
+.right-side{
+    width: 70vw;
+    height: 100vh;
+}
+.complaintCard{
+    width: 65vw !important;
+    height: 60vh !important;
+    border-color: #6f42c1 !important;
+}
+.complaintForm{
+    height: 67vh;
+}
+.historyTable{
+    width: 68vw;
+}
