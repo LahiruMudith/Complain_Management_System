@@ -16,7 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class UserModel {
-    public void saveUser(UserDto user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+    public String saveUser(UserDto user, HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
         try {
             ServletContext servletContext = req.getServletContext();
             BasicDataSource ds = (BasicDataSource) servletContext.getAttribute("ds");
@@ -38,26 +38,18 @@ public class UserModel {
             pstm.setString(9, user.getRole());
 
             int i = pstm.executeUpdate();
-            resp.setContentType("text/html");
 
-            if (i > 0) {
-                req.setAttribute("message", "User saved successfully");
-                RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/login.jsp"); // Or your original JSP
-                    dispatcher.forward(req, resp);
-            } else {
-                req.setAttribute("message", "User save failed");
-                RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/signIn.jsp");
-                dispatcher.forward(req, resp);
-            }
             connection.close();
+            if (i > 0) {
+                return "success";
+            } else {
+                return "Fail";
+            }
         } catch (SQLException e) {
-            req.setAttribute("message", "Internal Server Error: ");
-            RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/signIn.jsp");
-            dispatcher.forward(req, resp);
-            throw new RuntimeException(e);
+            return "Internal Server Error";
         }
     }
-    public void loginUser(String email, String password, HttpServletResponse resp, HttpServletRequest req) throws ServletException, IOException {
+    public UserDto loginUser(String email, String password, HttpServletResponse resp, HttpServletRequest req) throws ServletException, IOException {
         ServletContext context = req.getServletContext();
         BasicDataSource ds = (BasicDataSource) context.getAttribute("ds");
         try{
@@ -66,39 +58,23 @@ public class UserModel {
             pstm.setString(1, email);
             pstm.setString(2, password);
 
+            UserDto user = new UserDto();
+
             ResultSet resultSet = pstm.executeQuery();
             if (resultSet.next()){
-                String role = resultSet.getString("role");
-                String name = resultSet.getString("name");
-                String uId = resultSet.getString("UId");
-
-                req.setAttribute("message", "success");
-                req.setAttribute("uId", uId);
-                req.setAttribute("name", name);
-
-                System.out.println("User logged in successfully");
-                if (role.equals("Admin")){
-                    System.out.println("Admin logged in");
-
-                    req.setAttribute("role", role);
-
-                    RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/adminDashboard.jsp");
-                    dispatcher.forward(req, resp);
-                }else if (role.equals("Employee")) {
-                    System.out.println("Employee logged in");
-
-                    req.setAttribute("role", role);
-
-                    RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/employeeDashboard.jsp");
-                    dispatcher.forward(req, resp);
-                }
+                user.setUId(resultSet.getString("UId"));
+                user.setName(resultSet.getString("name"));
+                user.setAddress(resultSet.getString("address"));
+                user.setNic(resultSet.getString("nic"));
+                user.setPhone(resultSet.getString("phone"));
+                user.setEmail(resultSet.getString("email"));
+                user.setPassword(resultSet.getString("password"));
+                user.setActiveStatus(resultSet.getBoolean("active_status"));
+                user.setRole(resultSet.getString("role"));
             }
-
             connection.close();
+            return user;
         } catch (SQLException e) {
-            req.setAttribute("message", "error");
-            RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/login.jsp");
-            dispatcher.forward(req, resp);
             throw new RuntimeException(e);
         }
     }

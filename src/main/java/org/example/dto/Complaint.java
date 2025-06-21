@@ -19,6 +19,6 @@ public class Complaint {
     String userId;
     String complainDate;
     String status;
-    Date resolvedDate;
-    Time resolvedTime;
+    String resolvedDate;
+    String resolvedTime;
 }

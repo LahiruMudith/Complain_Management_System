@@ -8,21 +8,29 @@
 </head>
 <body>
 <%
-    String message = (String) request.getAttribute("message");
-    if (message != null) {
+    String saveResult = (String) request.getAttribute("result");
+    if (saveResult != null) {
 %>
 <script>
-    alert("<%= message %>");
-    console.log("<%= message %>")
+    const result = "<%= saveResult %>";
+    if (result === "success") {
+        alert("User saved successfully!");
+        window.location.href = "<%= request.getContextPath() %>/login";
+    } else if (result === "Fail") {
+        alert("User saving failed. Please try again.");
+        window.location.href = "<%= request.getContextPath() %>/signUp";
+    } else if (result === "Internal Server Error") {
+        alert("Something went wrong. Please contact support.");
+        window.location.href = "<%= request.getContextPath() %>/signUp";
+    }
 </script>
 <%
     }
 %>
 
-
 <section id="login-sec">
     <div class="left-side">
-        <form class="row g-3 signInForm card" action="http://localhost:8080/Complain_Management_System_Web_exploded/user" method="POST" enctype="multipart/form-data">
+        <form class="row g-3 signInForm card" action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/user" method="POST" enctype="multipart/form-data">
             <div class="row g-3">
                 <div class="col">
                     <input type="text" class="form-control" placeholder="Name" aria-label="Name" id="name" name="name" required>
@@ -62,8 +70,9 @@
                     </select>
                 </div>
             </div>
-            <div class="col-12 d-flex justify-content-center">
+            <div class="col-12 d-flex flex-column justify-content-center">
                 <button type="submit" class="btn btn-primary mb-3">Sign in</button>
+                <lable>You Have An Account ? <a href="http://localhost:8080/Complain_Management_System_Web_exploded/login">Login</a></lable>
             </div>
         </form>
     </div>

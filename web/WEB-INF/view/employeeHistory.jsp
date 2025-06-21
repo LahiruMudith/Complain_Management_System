@@ -24,45 +24,6 @@
     String role = user.getRole();
     String userId = user.getUId();
 %>
-
-<section class="employee-section">
-    <div class="left-side d-flex flex-column align-items-center justify-content-center">
-        <h1>Welcome, <%= name%></h1>
-        <img src="${pageContext.request.contextPath}/assets/images/employeeDashboard.jpg" class="img-fluid" alt="vector image">
-    </div>
-    <div class="right-side d-flex align-items-center justify-content-center">
-        <div class="card shadow complaintCard">
-            <div class="card-body">
-                <form class="was-validated complaintForm" action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint" method="post">
-                    <div class="col-md-12">
-                        <label for="name" class="form-label">Compliant Name</label>
-                        <input type="text" class="form-control is-valid" id="name" name="name" required>
-                        <input type="text" class="form-control is-valid" id="uId" name="uid" hidden>
-                        <input type="text" class="form-control is-valid" id="uName" name="uName" hidden>
-                        <input type="text" class="form-control is-valid" id="role" name="role" hidden>
-                        <div class="valid-feedback">
-                            Looks good!
-                        </div>
-                    </div>
-                    <div class="mb-3 h-50">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control h-75" id="description" name="description" required></textarea>
-                        <div class="invalid-feedback">
-                            Please enter a message in the description.
-                        </div>
-                    </div>
-                    <div class="col-12 d-flex justify-content-center">
-                        <div>
-                            <button type="submit" class="btn mb-3 text-white" style="background-color: #6f42c1;">
-                                Send
-                            </button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</section>
 <section>
     <div class="complaintHistoryTable">
         <table class="table historyTable">

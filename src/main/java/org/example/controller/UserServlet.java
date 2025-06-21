@@ -26,7 +26,7 @@ import java.util.UUID;
 
 import static java.lang.System.out;
 
-@WebServlet("/user")
+@WebServlet("/controller/user")
 @MultipartConfig
 public class UserServlet extends HttpServlet {
     @Override
@@ -47,7 +47,9 @@ public class UserServlet extends HttpServlet {
             );
 
             UserModel userModel = new UserModel();
-            userModel.saveUser(user, req, resp);
+        String result = userModel.saveUser(user, req, resp);
+        req.setAttribute("result", result);
+        req.getRequestDispatcher("/WEB-INF/view/signUp.jsp").forward(req, resp);
     }
 
     @Override

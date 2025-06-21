@@ -25,6 +25,6 @@ public class DashboardServlet extends HttpServlet {
         user.setName(name);
         user.setRole(role);
 
-        complanitModel.getUserComplaints(user, req, resp);
+//        complanitModel.getUserComplaints(user, req, resp);
     }
 }

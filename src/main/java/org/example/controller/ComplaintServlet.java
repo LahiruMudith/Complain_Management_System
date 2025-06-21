@@ -9,6 +9,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.example.dto.Complaint;
+import org.example.dto.UserDto;
+import org.example.model.ComplanitModel;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,101 +23,39 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@WebServlet("/complaint")
+@WebServlet("/controller/complaint")
 public class ComplaintServlet extends HttpServlet {
+    ComplanitModel complanitModel = new ComplanitModel();
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ServletContext sc = req.getServletContext();
-        BasicDataSource ds = (BasicDataSource) sc.getAttribute("ds");
-        String uId = req.getParameter("uid");
-        String name = req.getParameter("name");
-        String role = req.getParameter("role");
-        try {
-            Connection connection = ds.getConnection();
-            PreparedStatement pstm = connection.prepareStatement("INSERT INTO Complaint (description, name, user_id, complain_date, status, resolved_date, resolved_time) VALUES (?,?,?,?,?,?,?)");
-            pstm.setString(1, req.getParameter("description"));
-            pstm.setString(2, req.getParameter("name"));
-            pstm.setString(3, req.getParameter("uid"));
-            pstm.setString(4, String.valueOf(LocalDate.now()));
-            pstm.setString(5, "pending"); // Default status
-            pstm.setString(6, LocalDate.now().toString());
-            pstm.setString(7, LocalTime.now().toString());
+        Complaint complaint = new Complaint(
+                "01",//fake id
+                req.getParameter("name"),
+                req.getParameter("description"),
+                req.getParameter("uid"),
+                String.valueOf(LocalDate.now()),
+                "pending", // Default status
+                LocalDate.now().toString(), // format: YYYY-MM-DD
+                LocalTime.now().toString()
+        );
+        String result = complanitModel.saveComplaint(complaint, req, resp);
 
-            int i = pstm.executeUpdate();
-            resp.setContentType("text/html");
-            System.out.println(i);
-            if (i > 0) {
-                req.setAttribute("uId", uId);
-                req.setAttribute("name", name);
-                req.setAttribute("role", role);
+        UserDto user = new UserDto();
+        user.setUId(req.getParameter("uid"));
+        user.setName(req.getParameter("uName"));
+        user.setRole(req.getParameter("role"));
 
-                resp.setHeader("message", "ComplaintDto registered successfully");
-                RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/employeeDashboard.jsp");
-                dispatcher.forward(req, resp);
-            } else {
-                resp.setHeader("message", "ComplaintDto registered fail");
-                RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/employeeDashboard.jsp");
-                dispatcher.forward(req, resp);
-            }
-        } catch (SQLException e) {
-            resp.setHeader("message", "Internal Server Error");
-            RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/employeeDashboard.jsp");
-            dispatcher.forward(req, resp);
-            throw new RuntimeException(e);
+        if (result.equals("success")) {
+            req.setAttribute("user", user);
+            System.out.println(user.getName() + " has successfully submitted a complaint." + user.getUId());
+            req.getRequestDispatcher("/WEB-INF/view/employeeDashboard.jsp").forward(req, resp);
         }
     }
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        ServletContext context = req.getServletContext();
-        BasicDataSource ds = (BasicDataSource) context.getAttribute("ds");
-        resp.setContentType("application/json");
-        ObjectMapper mapper = new ObjectMapper();
-        PrintWriter out = resp.getWriter();
-
-        try {
-            Connection connection = ds.getConnection();
-            PreparedStatement pstm = connection.prepareStatement("SELECT * FROM Complaint");
-            ResultSet resultSet = pstm.executeQuery();
-
-            List<Map<String, String>> complaints = new ArrayList<>();
-            while (resultSet.next()) {
-                Map<String, String> complaint = Map.of(
-                        "cid", resultSet.getString("CID"),
-                        "name", resultSet.getString("name"),
-                        "description", resultSet.getString("description"),
-                        "user_id", resultSet.getString("user_id"),
-                        "complain_date", resultSet.getString("complain_date"),
-                        "status", resultSet.getString("status"),
-                        "resolved_date", resultSet.getString("resolved_date"),
-                        "resolved_time", resultSet.getString("resolved_time")
-                );
-                complaints.add(complaint);
-            }
-
-            if (complaints.isEmpty()) {
-                resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                mapper.writeValue(out, Map.of(
-                        "code", "204",
-                        "status", "No Content",
-                        "message", "No complaints found"
-                ));
-            } else {
-                resp.setStatus(HttpServletResponse.SC_OK);
-                mapper.writeValue(out, Map.of(
-                        "code", "200",
-                        "status", "success",
-                        "data", complaints
-                ));
-            }
-        } catch (SQLException e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            mapper.writeValue(out, Map.of(
-                    "code", "500",
-                    "status", "error",
-                    "message", "Internal Server Error"
-            ));
-            throw new RuntimeException(e);
-        }
+        List<Complaint> allComplaints = complanitModel.getAllComplaints(req, resp);
+        System.out.println("All Complaints: " + allComplaints);
+        System.out.println(req.getParameter("name"));
     }
     @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

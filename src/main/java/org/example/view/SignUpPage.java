@@ -9,13 +9,13 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet("/signIn")
-public class SignInPage extends HttpServlet {
+@WebServlet("/signUp")
+public class SignUpPage extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.getWriter().append("Served at: ").append(req.getContextPath());
 
-        RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/signIn.jsp");
+        RequestDispatcher dispatcher = req.getRequestDispatcher("/WEB-INF/view/signUp.jsp");
         dispatcher.forward(req, resp);
     }
 }
