@@ -25,9 +25,17 @@
     String userId = user.getUId();
 %>
 
-<section class="employee-section">
+<section class="employee-section" style="height: 95vh">
     <div class="left-side d-flex flex-column align-items-center justify-content-center">
         <h1>Welcome, <%= name%></h1>
+        <form action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint">
+            <button type="submit" class="btn mb-3 text-white">
+                <img src="<%= request.getContextPath() %>/assets/icon/history.png" width="30px">
+            </button>
+            <input type="text" class="form-control is-valid" name="name" value="<%= name%>" hidden>
+            <input type="text" class="form-control is-valid" name="role" value="<%= role%>" hidden>
+            <input type="text" class="form-control is-valid" name="userId" value="<%= userId%>" hidden>
+        </form>
         <img src="${pageContext.request.contextPath}/assets/images/employeeDashboard.jpg" class="img-fluid" alt="vector image">
     </div>
     <div class="right-side d-flex align-items-center justify-content-center">
@@ -38,6 +46,7 @@
                         <label for="name" class="form-label">Compliant Name</label>
                         <input type="text" class="form-control is-valid" id="name" name="name" required>
                         <input type="text" class="form-control is-valid" id="uId" name="uid" hidden>
+                        <input type="text" class="form-control is-valid" id="method" name="method" hidden>
                         <input type="text" class="form-control is-valid" id="uName" name="uName" hidden>
                         <input type="text" class="form-control is-valid" id="role" name="role" hidden>
                         <div class="valid-feedback">
@@ -63,48 +72,12 @@
         </div>
     </div>
 </section>
-<section>
-    <div class="complaintHistoryTable">
-        <table class="table historyTable">
-            <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Complaint Date</th>
-                <th scope="col">Status</th>
-                <th scope="col">Resolved Date</th>
-                <th scope="col">Resolved Time</th>
-                <th scope="col"></th>
-                <th scope="col"></th>
-            </tr>
-            </thead>
-            <tbody>
-            <%
-                if (complaints != null) {
-                    for (Complaint c : complaints) {
-                        if (c.getUserId().equals(userId)) {
-            %>
-            <tr>
-                <td><%= c.getCId() %></td>
-                <td><%= c.getName() %></td>
-                <td><%= c.getDescription() %></td>
-                <td><%= c.getComplainDate() %></td>
-                <td><%= c.getStatus() %></td>
-                <td><%= c.getResolvedDate() != null ? c.getResolvedDate() : "-" %></td>
-                <td><%= c.getResolvedTime() != null ? c.getResolvedTime() : "-" %></td>
-                <td><button class="btn btn-warning btn-sm">Edit</button></td>
-                <td><button class="btn btn-danger btn-sm">Delete</button></td>
-            </tr>
-            <%
-                        }
-                    }
-                }
-            %>
-            </tbody>
-        </table>
-    </div>
-</section>
+<form>
+
+    <button type="button" class="btn btn-danger ms-2">Logout</button>
+</form>
+
+
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
@@ -140,6 +113,7 @@
     $("#uId").val(userId);
     $("#uName").val(username);
     $("#role").val(role);
+    $("#method").val("post");
 </script>
 
 </body>

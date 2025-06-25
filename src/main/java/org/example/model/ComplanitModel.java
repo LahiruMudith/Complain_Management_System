@@ -1,5 +1,6 @@
 package org.example.model;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -10,8 +11,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ComplanitModel {
     public String saveComplaint(Complaint complaint, HttpServletRequest req, HttpServletResponse resp) {
@@ -78,5 +82,77 @@ public class ComplanitModel {
             throw new RuntimeException(e);
         }
         return null;
+    }
+
+    public String deleteComplaint(String cid, HttpServletRequest req, HttpServletResponse resp) {
+        ServletContext servletContext = req.getServletContext();
+        BasicDataSource ds = (BasicDataSource) servletContext.getAttribute("ds");
+        ObjectMapper mapper = new ObjectMapper();
+        resp.setContentType("application/json");
+
+        try {
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement(
+                    "DELETE FROM Complaint WHERE CID = ?"
+            );
+            pstm.setString(1, cid);
+
+            int i = pstm.executeUpdate();
+
+            if (i > 0) {
+                return "success";
+            } else {
+                return "fail";
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "error";
+        }
+    }
+    public String updateComplain(HttpServletRequest req, HttpServletResponse resp) {
+        try {
+
+            String cid = req.getParameter("id");
+            String name = req.getParameter("name");
+            String description = req.getParameter("description");
+            String status = req.getParameter("status");
+            String resolvedDate = req.getParameter("complainDate"); // format: YYYY-MM-DD
+            String resolvedTime = LocalTime.now().toString(); // format: HH:MM:SS
+
+            System.out.println("Updating complaint with ID: " + cid);
+
+            ServletContext servletContext = req.getServletContext();
+            BasicDataSource ds = (BasicDataSource) servletContext.getAttribute("ds");
+
+            Connection connection = ds.getConnection();
+            PreparedStatement pstm = connection.prepareStatement(
+                    "UPDATE complaint SET name = ?, description = ?, status = ?, resolved_date = ?, resolved_time = ? WHERE CID = ?"
+            );
+            System.out.println("PreparedStatement created for updating complaint.");
+
+            pstm.setString(1, name);
+            pstm.setString(2, description);
+            pstm.setString(3, status);
+            pstm.setString(4, resolvedDate); // format: YYYY-MM-DD
+            pstm.setString(5, resolvedTime); // format: HH:MM:SS
+            pstm.setString(6, cid);
+
+            System.out.println("Parameters set for updating complaint: " + name + ", " + description + ", " + status + ", " + resolvedDate + ", " + resolvedTime + ", CID: " + cid);
+
+            int i = pstm.executeUpdate();
+            resp.setContentType("application/json");
+            System.out.println(i);
+
+            if (i > 0) {
+                System.out.println("Update successful.");
+                return "success";
+            } else {
+                System.out.println("Update failed, no rows affected.");
+                return "fail";
+            }
+        } catch (SQLException e) {
+            return "error";
+        }
     }
 }
