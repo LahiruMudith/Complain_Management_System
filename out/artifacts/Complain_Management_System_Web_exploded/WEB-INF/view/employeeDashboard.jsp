@@ -1,6 +1,7 @@
 <%@ page import="java.util.Objects" %>
 <%@ page import="java.util.List" %>
-<%@ page import="org.example.dto.Complaint" %><%--
+<%@ page import="org.example.dto.Complaint" %>
+<%@ page import="org.example.dto.UserDto" %><%--
   Created by IntelliJ IDEA.
   User: lahir
   Date: 6/17/2025
@@ -17,30 +18,37 @@
 </head>
 <body>
 <%
-    String message = (String) request.getAttribute("message");
-    String role = (String) request.getAttribute("role");
-    String uId = (String) request.getAttribute("uId");
-    String name = (String) request.getAttribute("name");
-
+    UserDto user = (UserDto) request.getAttribute("user");
     List<Complaint> complaints = (List<Complaint>) request.getAttribute("complaints");
-
+    String name = user.getName();
+    String role = user.getRole();
+    String userId = user.getUId();
 %>
-<section class="employee-section">
+
+<section class="employee-section" style="height: 95vh">
     <div class="left-side d-flex flex-column align-items-center justify-content-center">
         <h1>Welcome, <%= name%></h1>
-        <form action="http://localhost:8080/Complain_Management_System_Web_exploded/complaint" method="get">
-            <button type="button" class="btn mb-3 historyBtn"><img src="${pageContext.request.contextPath}/assets/icon/history.png" width="35px"></button>
+        <form action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint">
+            <button type="submit" class="btn mb-3 text-white">
+                <img src="<%= request.getContextPath() %>/assets/icon/history.png" width="30px">
+            </button>
+            <input type="text" class="form-control is-valid" name="name" value="<%= name%>" hidden>
+            <input type="text" class="form-control is-valid" name="role" value="<%= role%>" hidden>
+            <input type="text" class="form-control is-valid" name="userId" value="<%= userId%>" hidden>
         </form>
         <img src="${pageContext.request.contextPath}/assets/images/employeeDashboard.jpg" class="img-fluid" alt="vector image">
     </div>
     <div class="right-side d-flex align-items-center justify-content-center">
         <div class="card shadow complaintCard">
             <div class="card-body">
-                <form class="was-validated complaintForm" action="http://localhost:8080/Complain_Management_System_Web_exploded/complaint" method="post">
+                <form class="was-validated complaintForm" action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint" method="post">
                     <div class="col-md-12">
                         <label for="name" class="form-label">Compliant Name</label>
                         <input type="text" class="form-control is-valid" id="name" name="name" required>
-                        <input type="text" class="form-control is-valid" id="uId" name="uid" hidden value=>
+                        <input type="text" class="form-control is-valid" id="uId" name="uid" hidden>
+                        <input type="text" class="form-control is-valid" id="method" name="method" hidden>
+                        <input type="text" class="form-control is-valid" id="uName" name="uName" hidden>
+                        <input type="text" class="form-control is-valid" id="role" name="role" hidden>
                         <div class="valid-feedback">
                             Looks good!
                         </div>
@@ -62,38 +70,48 @@
                 </form>
             </div>
         </div>
-        </div>
     </div>
 </section>
+<button type="button" class="btn btn-danger ms-2">Logout</button>
+
+
 
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
 <script>
-    $(document).ready(function() {
-        // Check if user is logged in
-        var uid = localStorage.getItem('uId');
-        var name = localStorage.getItem('name');
-        if (!uid) {
-            window.location.href = 'login.jsp';
-        } else {
-            alert("Login Successful");
+    $(document).ready(function () {
+        const userId = localStorage.getItem('userId');
+        const username = localStorage.getItem('username');
+        const role = localStorage.getItem('role');
+
+        if (!userId || !username || !role) {
+            alert("You must log in first!");
+            window.location.href = "<%= request.getContextPath() %>/login";
+        }else{
+            <% user.setUId(userId);%>
+            <% user.setName(name);%>
+            <% user.setRole(role);%>
         }
     });
 
-    localStorage.setItem("uId", "<%= uId %>");
-    localStorage.setItem("role", "<%= role %>");
-    localStorage.setItem("name", "<%= name %>");
 
-    const uid = localStorage.getItem("uId");
-    if (uid) {
-        document.getElementById("uId").value = uid;
-        console.log("User ID set in form: " + uid);
-    }
+    // Get data from backend (Java)
+    const username = "<%= name %>";
+    const role = "<%= role %>";
+    const userId = "<%= userId %>";
 
-    $(".historyBtn").on("click", function() {
-        window.location.href = "employeeDashboardwithOrderHistory.jsp";
-        console.log("History button clicked, redirecting to history page.");
-    });
+    // Store in browser's localStorage
+    localStorage.setItem("username", username);
+    localStorage.setItem("role", role);
+    localStorage.setItem("userId", userId);
+
+    // Optional: confirm in console
+    console.log("Stored in browser:", username, role, userId);
+    $("#uId").val(userId);
+    $("#uName").val(username);
+    $("#role").val(role);
+    $("#method").val("post");
 </script>
+
 </body>
 </html>

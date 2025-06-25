@@ -1,4 +1,5 @@
 .employee-section{
+    height: 95vh !important;
     display: flex;
 }
 .left-side{

@@ -24,7 +24,63 @@
     String role = user.getRole();
     String userId = user.getUId();
 %>
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint" method="post">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Update Menu</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="m-3">
+                            <label for="id" class="form-label">Id</label>
+                            <input type="text" class="form-control" id="id" name="id" readonly>
+                            <input type="text" class="form-control" name="userId" value="<%= userId%>" hidden>
+                            <input type="text" class="form-control"  name="method" value="update" hidden>
+                            <input type="text" class="form-control" name="userName" value="<%= name%>" hidden>
+                            <input type="text" class="form-control" name="userRole" value="<%= role%>" hidden>
+                        </div>
+                        <div class="m-3">
+                            <label for="name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="name" name="name">
+                        </div>
+                        <div class="m-3">
+                            <label for="description" class="form-label">Description</label>
+                            <input type="text" class="form-control" id="description" name="description">
+                        </div>
+                        <div class="m-3">
+                            <label for="complainDate" class="form-label">Complain Date</label>
+                            <input type="text" class="form-control" id="complainDate" name="complainDate" readonly>
+                        </div>
+                        <div class="m-3">
+                            <label for="status" class="form-label">Status</label>
+                            <input type="text" class="form-control" id="status" name="status" readonly>
+                        </div>
+                        <div class="m-3">
+                            <label for="resolvedDate" class="form-label">Resolved Date</label>
+                            <input type="text" class="form-control" id="resolvedDate" name="resolvedDate" readonly>
+                        </div>
+                        <div class="m-3">
+                            <label for="resolvedTime" class="form-label">Resolved Time</label>
+                            <input type="text" class="form-control" id="resolvedTime" name="resolvedTime" readonly>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">Update Complain</button>
+                    </div>
+                </form>
+            </div>
+    </div>
+</div>
 <section>
+    <form action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint" method="post">
+        <input type="text" class="form-control" value="<%= userId%>" name="userId" hidden>
+        <input type="text" class="form-control" value="goEmployeeDashboard" name="method" hidden>
+        <input type="text" class="form-control" value="<%= name%>" name="name" hidden>
+        <input type="text" class="form-control" value="<%= role%>" name="role" hidden>
+        <button type="submit" class="btn btn-secondary m-1"> < Back</button>
+    </form>
     <div class="complaintHistoryTable">
         <table class="table historyTable">
             <thead>
@@ -54,8 +110,35 @@
                 <td><%= c.getStatus() %></td>
                 <td><%= c.getResolvedDate() != null ? c.getResolvedDate() : "-" %></td>
                 <td><%= c.getResolvedTime() != null ? c.getResolvedTime() : "-" %></td>
-                <td><button class="btn btn-warning btn-sm">Edit</button></td>
-                <td><button class="btn btn-danger btn-sm">Delete</button></td>
+                <td>
+                    <button
+                            type="button"
+                            class="btn btn-warning btn-sm editBtn"
+                            data-cid="<%= c.getCId() %>"
+                            data-name="<%= c.getName() %>"
+                            data-description="<%= c.getDescription() %>"
+                            data-complaindate="<%= c.getComplainDate() %>"
+                            data-status="<%= c.getStatus() %>"
+                            data-resolveddate="<%= c.getResolvedDate() != null ? c.getResolvedDate() : "" %>"
+                            data-resolvedtime="<%= c.getResolvedTime() != null ? c.getResolvedTime() : "" %>"
+                            data-bs-toggle="modal"
+                            data-bs-target="#exampleModal">
+                        Edit
+                    </button>
+                </td>
+
+                <td>
+                    <form action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/complaint" method="POST" style="display:inline;">
+                        <input type="hidden" name="cId" value="<%= c.getCId() %>"/>
+                        <input type="hidden" name="name" value="<%= name %>"/>
+                        <input type="hidden" name="uid" value="<%= userId %>"/>
+                        <input type="hidden" name="role" value="<%= role %>"/>
+                        <input type="hidden" name="method" value="delete"/>
+                        <button type="submit" class="btn btn-danger btn-sm" onsubmit="return confirm('Are you sure you want to delete this complaint?');">
+                            Delete
+                        </button>
+                    </form>
+                </td>
             </tr>
             <%
                         }
@@ -101,6 +184,27 @@
     $("#uId").val(userId);
     $("#uName").val(username);
     $("#role").val(role);
+
+    $(document).on("click", ".editBtn", function () {
+        const btn = $(this);
+        const cId = btn.data("cid");
+        const name = btn.data("name");
+        const description = btn.data("description");
+        const complainDate = btn.data("complaindate");
+        const status = btn.data("status");
+        const resolvedDate = btn.data("resolveddate");
+        const resolvedTime = btn.data("resolvedtime");
+
+        // Populate modal form fields
+        $("#id").val(cId);
+        $("#name").val(name);
+        $("#description").val(description);
+        $("#complainDate").val(complainDate);
+        $("#status").val(status);
+        $("#resolvedDate").val(resolvedDate || "-");
+        $("#resolvedTime").val(resolvedTime || "-");
+    });
+
 </script>
 
 </body>

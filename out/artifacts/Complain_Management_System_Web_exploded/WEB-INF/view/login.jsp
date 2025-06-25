@@ -14,9 +14,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
 </head>
 <body>
+<%
+    String error = (String) request.getAttribute("error");
+    if (error != null) {
+%>
+<script>
+    alert("<%= error %>");
+</script>
+<%
+    }
+%>
+
 <section id="login-sec">
     <div class="left-side">
-        <form class="d-flex flex-column justify-content-center card" action="http://localhost:8080/Complain_Management_System_Web_exploded/loginServlet" method="POST">
+        <form class="d-flex flex-column justify-content-center card" action="http://localhost:8080/Complain_Management_System_Web_exploded/controller/login" method="POST">
             <div class="m-3">
                 <label for="loginEmail" class="form-label">Email</label>
                 <input type="email" class="form-control" id="loginEmail" aria-describedby="emailHelp" name="email">
@@ -26,6 +37,7 @@
                 <input type="password" class="form-control" id="loginPassword" name="password">
             </div>
             <button type="submit" class="btn btn-primary m-3">Login</button>
+            <lable>You Don'tHave An Account ? <a href="http://localhost:8080/Complain_Management_System_Web_exploded/signUp">Sign Up</a></lable>
         </form>
     </div>
     <div class="right-side">
@@ -33,7 +45,16 @@
     </div>
 </section>
 
-
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js" integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q" crossorigin="anonymous"></script>
+<script>
+    <%--$(document).ready(function() {--%>
+    <%--    // Check if user is logged in--%>
+    <%--    var userId = localStorage.getItem('userId');--%>
+    <%--    if (userId) {--%>
+    <%--        window.location.href = "<%= request.getContextPath() %>/employee";--%>
+    <%--    }--%>
+    <%--});--%>
+</script>
 </body>
 </html>
